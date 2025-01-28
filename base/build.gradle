@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.p2vman'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.google.code.gson:gson:2.8.9"
+}
+
+task createJar(type: Jar) {
+    archiveBaseName = 'base'
+    archiveVersion = 'marge'
+    from sourceSets.main.output
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

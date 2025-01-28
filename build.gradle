@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+task mergeJars(type: Jar) {
+    archiveBaseName = 'EptaList'
+    archiveVersion = '1.1-release'
+
+    def jarPaths = [
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\velocity\\build\\libs\\velocity-1.0.jar",
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\spigot\\build\\libs\\spigot-1.0.jar",
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\base\\build\\libs\\base-1.0.jar"
+    ]
+
+    from jarPaths.collect { zipTree(it) }
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
