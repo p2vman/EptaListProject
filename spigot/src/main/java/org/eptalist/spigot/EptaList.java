@@ -5,6 +5,7 @@ import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
 import org.eptalist.Config;
 import io.github.p2vman.Identifier;
+import org.eptalist.Constants;
 import org.eptalist.spigot.metrics.Metrics;
 import org.eptalist.storge.Data;
 import org.bukkit.Bukkit;
@@ -57,7 +58,7 @@ public final class EptaList extends JavaPlugin {
     @Override
     public void onEnable() {
         profiler.push("init");
-        metrics = new Metrics(this, 24527);
+        metrics = new Metrics(this, Constants.bstats_id);
 
         File data = getDataFolder();
         if (!data.exists()) {

@@ -15,6 +15,7 @@ import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
 import net.kyori.adventure.text.Component;
 import org.eptalist.Config;
+import org.eptalist.Constants;
 import org.eptalist.storge.Data;
 import org.eptalist.velocity.metrics.Metrics;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class Velocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        Metrics metrics = metricsFactory.make(this, 24527);
+        Metrics metrics = metricsFactory.make(this, Constants.bstats_id);
 
         metrics.addCustomChart(new Metrics.SimplePie("data_type", () -> mode.storage));
     }

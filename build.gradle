@@ -10,12 +10,12 @@ allprojects {
 
 task mergeJars(type: Jar) {
     archiveBaseName = 'EptaList'
-    archiveVersion = '1.1-release'
+    archiveVersion = '1.2'
 
     def jarPaths = [
-            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\velocity\\build\\libs\\velocity-1.0.jar",
-            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\spigot\\build\\libs\\spigot-1.0.jar",
-            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\base\\build\\libs\\base-1.0.jar"
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\velocity\\build\\libs\\velocity-"+'1.2'+".jar",
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\spigot\\build\\libs\\spigot-"+'1.2'+".jar",
+            "C:\\Users\\User\\IdeaProjects\\EptaListProject\\base\\build\\libs\\base-"+'1.2'+".jar"
     ]
 
     from jarPaths.collect { zipTree(it) }
