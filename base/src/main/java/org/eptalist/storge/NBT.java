@@ -60,12 +60,17 @@ public class NBT extends ArrayList<String> implements Data<String> {
             }
             DataInputStream datastream = new DataInputStream(stream);
 
-            Pair<String, Tag> tag = io.read(datastream);
-            if (tag.v instanceof TagCompound compound) {
-                if (compound.is("whitelist") && (compound.get("whitelist") instanceof TagList list)) {
+            Pair<String, Tag> tagr = io.read(datastream);
+            if (tagr.v instanceof TagCompound) {
+                TagCompound compound = (TagCompound) tagr.v;
+                if (compound.is("whitelist") && (compound.get("whitelist") instanceof TagList)) {
+                    TagList list = (TagList) compound.get("whitelist");
                     Iterator<Tag> it =  list.iterator();
-                    while (it.hasNext()) if (it.next() instanceof TagString palyer) {
-                        add(palyer.getValue());
+                    while (it.hasNext()) {
+                        Tag tag = it.next();
+                        if (tag instanceof TagString) {
+                            add(((TagString) tag).getValue());
+                        }
                     }
                 }
             }

@@ -10,14 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NbtIo {
-    private Map<Character, Class<? extends Tag>> idclass;
+    private final Map<Character, Class<? extends Tag>> idclass;
 
     public NbtIo(Map<Character, Class<? extends Tag>> idclass) {
         this.idclass = idclass;
-    }
-
-    public Serializer getSerializer() {
-        return new Serializer(this);
     }
 
     public NbtIo() {

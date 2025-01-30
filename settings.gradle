@@ -1,2 +1,2 @@
 rootProject.name = 'EptaListProject'
-include ':base', ':velocity', ':spigot'
+include ':base', ':velocity', ':spigot', ":boungecord"
