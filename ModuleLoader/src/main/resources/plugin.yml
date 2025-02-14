@@ -1,0 +1,4 @@
+name: ModuleLoader
+version: '${version}'
+main: opg.p2vman.moduleloader.ModuleLoader
+api-version: '1.18'
