@@ -31,7 +31,7 @@ task mergePlugins(type: Jar) {
     archiveVersion = version
 
     def projects = [':base', ':velocity', ':spigot', ":boungecord"]
-    def jars = {
+    from {
         def jr = []
         projects.forEach {
             evaluationDependsOn(it)
@@ -40,16 +40,7 @@ task mergePlugins(type: Jar) {
             jr.add(task.get().archiveFile.get())
         }
         return jr
-    }
-
-    def jarPaths = [
-            "D:\\Users\\User\\IdeaProjects\\EptaListProject\\velocity\\build\\libs\\velocity-"+version+".jar",
-            "D:\\Users\\User\\IdeaProjects\\EptaListProject\\spigot\\build\\libs\\spigot-"+version+".jar",
-            "D:\\Users\\User\\IdeaProjects\\EptaListProject\\base\\build\\libs\\base-"+version+".jar",
-            "D:\\Users\\User\\IdeaProjects\\EptaListProject\\boungecord\\build\\libs\\boungecord-"+version+".jar"
-    ]
-
-    from jars().collect { zipTree(it) }
+    }.collect { zipTree(it) }
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
@@ -65,15 +56,21 @@ tasks.register('downloadBungeeCord', Download) {
     overwrite false
 }
 
-tasks.register("RunBungeeCord") {
+tasks.register('downloadVelocity', Download) {
+    src 'https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/473/downloads/velocity-3.4.0-SNAPSHOT-473.jar'
+    dest file("$buildDir/downloads/Velocity.jar")
+    overwrite false
+}
+
+tasks.register("RunVelocity") {
     dependsOn mergeALL
-    dependsOn 'downloadBungeeCord'
+    dependsOn 'downloadVelocity'
 
     def jarFile = file("$buildDir/libs/EptaList-${version}.jar")
-    def targetDir = file("$buildDir/run/plugins")
+    def targetDir = file("$buildDir/run/velocity/plugins")
 
 
-    def jarFile2 = file("$buildDir/run/plugins/EptaList-${version}.jar")
+    def jarFile2 = file("$buildDir/run/velocity/plugins/EptaList-${version}.jar")
     if (jarFile2.exists()) {
         jarFile2.delete()
     }
@@ -84,7 +81,38 @@ tasks.register("RunBungeeCord") {
         into targetDir
     }
 
-    targetDir = file("$buildDir/run")
+    targetDir = file("$buildDir/run/velocity")
+    jarFile = file("$buildDir/downloads/Velocity.jar")
+
+    doLast {
+        javaexec {
+            workingDir = targetDir
+            mainClass = '-jar'
+            args = [jarFile]
+        }
+    }
+}
+
+tasks.register("RunBungeeCord") {
+    dependsOn mergeALL
+    dependsOn 'downloadBungeeCord'
+
+    def jarFile = file("$buildDir/libs/EptaList-${version}.jar")
+    def targetDir = file("$buildDir/run/bungeecord/plugins")
+
+
+    def jarFile2 = file("$buildDir/run/bungeecord/plugins/EptaList-${version}.jar")
+    if (jarFile2.exists()) {
+        jarFile2.delete()
+    }
+
+    targetDir.mkdirs()
+    copy {
+        from jarFile
+        into targetDir
+    }
+
+    targetDir = file("$buildDir/run/bungeecord")
     jarFile = file("$buildDir/downloads/BungeeCord.jar")
 
     doLast {
