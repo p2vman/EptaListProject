@@ -31,7 +31,7 @@ task mergePlugins(type: Jar) {
     archiveVersion = version
 
     def projects = [':base', ':velocity', ':spigot', ":boungecord"]
-    from {
+    def jars = {
         def jr = []
         projects.forEach {
             evaluationDependsOn(it)
@@ -40,7 +40,13 @@ task mergePlugins(type: Jar) {
             jr.add(task.get().archiveFile.get())
         }
         return jr
-    }.collect { zipTree(it) }
+    }
+    from jars().collect { zipTree(it) }
+
+    from(file("LICENSE")) {
+        into("META-INF/license")
+        rename { "eptalist-LICENSE.txt" }
+    }
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
