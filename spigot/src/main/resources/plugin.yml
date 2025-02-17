@@ -1,5 +1,5 @@
 name: EptaList
 version: "${version}"
 main: org.eptalist.spigot.EptaList
-softdepend:
-  - ModuleLoader
+authors:
+  - p2vman

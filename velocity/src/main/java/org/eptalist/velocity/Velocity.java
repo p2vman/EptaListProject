@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-@Plugin(id = "eptalist", name = "Eptalist", version = BuildConstants.VERSION)
+@Plugin(id = "eptalist", name = "Eptalist", version = BuildConstants.VERSION, authors = "p2vman")
 public class Velocity {
     private static Metrics metrics;
     public static final Profiler profiler = new ExempleProfiler();
