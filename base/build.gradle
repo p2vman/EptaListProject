@@ -2,8 +2,12 @@ plugins {
     id 'java'
 }
 
+ext {
+    version = "1.5"
+}
+
 group = 'io.github.p2vman'
-version = '1.4'
+version = project.findProperty("version")
 
 repositories {
     mavenCentral()

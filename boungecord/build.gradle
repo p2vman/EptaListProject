@@ -1,7 +1,8 @@
 apply plugin: 'java'
 
-group = 'org.eg4rerer'
-version = '1.4'
+evaluationDependsOn(':base')
+group = 'org.eptalist'
+version = project.findProperty("version")
 
 repositories {
     mavenCentral()

@@ -23,7 +23,11 @@ allprojects {
     }
 }
 
-version = "1.4"
+version = project.findProperty("version")
+
+ext {
+
+}
 
 task mergePlugins(type: Jar) {
     def io = it
@@ -46,6 +50,14 @@ task mergePlugins(type: Jar) {
     from(file("LICENSE")) {
         into("META-INF/license")
         rename { "eptalist-LICENSE.txt" }
+    }
+
+    rename { name ->
+        if (name.endsWith("-LICENSE.txt")) {
+            "META-INF/license/$name"
+        } else {
+            name
+        }
     }
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
