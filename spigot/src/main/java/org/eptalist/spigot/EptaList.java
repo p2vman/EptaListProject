@@ -1,18 +1,18 @@
 package org.eptalist.spigot;
 
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonObject;
 import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
+import io.github.p2vman.updater.Updater;
 import org.eptalist.Config;
 import io.github.p2vman.Identifier;
 import org.eptalist.Constants;
+import org.eptalist.metrics.SimplePie;
 import org.eptalist.spigot.metrics.Metrics;
 import org.eptalist.storge.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
-import org.bukkit.permissions.Permission;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -57,6 +57,22 @@ public final class EptaList extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        try {
+            Updater updater = Updater.getInstance();
+            JsonObject obj = updater.getLasted();
+            if (!getDescription().getVersion().equals(obj.get("name").getAsString())) {
+                LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "new version:");
+                LOGGER.log(Level.WARNING, updater.getVersionUrl());
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "---------------------------------");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         profiler.push("init");
         metrics = new Metrics(this, Constants.bstats_id);
 
@@ -80,7 +96,7 @@ public final class EptaList extends JavaPlugin {
         }
         
         getServer().getPluginManager().registerEvents(new Event(), this);
-        metrics.addCustomChart(new Metrics.SimplePie("data_type", () -> mode.storage));
+        metrics.addCustomChart(new SimplePie("data_type", () -> mode.storage));
         LOGGER.log(Level.INFO, String.format("Init Plugin %sms", profiler.getElapsedTimeAndRemove(profiler.pop())));
     }
 

@@ -1,6 +1,6 @@
 package org.eptalist.velocity;
 
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.event.ResultedEvent;
@@ -13,9 +13,11 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import io.github.p2vman.Identifier;
 import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
+import io.github.p2vman.updater.Updater;
 import net.kyori.adventure.text.Component;
 import org.eptalist.Config;
 import org.eptalist.Constants;
+import org.eptalist.metrics.SimplePie;
 import org.eptalist.storge.Data;
 import org.eptalist.velocity.metrics.Metrics;
 import org.slf4j.Logger;
@@ -28,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-@Plugin(id = "velocity", name = "velocity", version = BuildConstants.VERSION)
+@Plugin(id = "eptalist", name = "Eptalist", version = BuildConstants.VERSION)
 public class Velocity {
     private static Metrics metrics;
     public static final Profiler profiler = new ExempleProfiler();
@@ -66,6 +68,20 @@ public class Velocity {
 
     @Inject
     public Velocity(ProxyServer server, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
+        try {
+            Updater updater = Updater.getInstance();
+            JsonObject obj = updater.getLasted();
+            if (!BuildConstants.VERSION.equals(obj.get("name").getAsString())) {
+                LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "new version:");
+                LOGGER.log(Level.WARNING, updater.getVersionUrl());
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "---------------------------------");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         profiler.push("init");
         this.metricsFactory = metricsFactory;
         this.dataDirectory = dataDirectory;
@@ -83,13 +99,13 @@ public class Velocity {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         Metrics metrics = metricsFactory.make(this, Constants.bstats_id);
 
-        metrics.addCustomChart(new Metrics.SimplePie("data_type", () -> mode.storage));
+        metrics.addCustomChart(new SimplePie("data_type", () -> mode.storage));
     }
 
     @Subscribe
     public void onLogin(LoginEvent event) {
         if (list.is(event.getPlayer().getUsername())) {
-            event.setResult(ResultedEvent.ComponentResult.denied(Component.text("")));
+            event.setResult(ResultedEvent.ComponentResult.denied(Component.text(mode.kick_msg)));
         }
     }
 }

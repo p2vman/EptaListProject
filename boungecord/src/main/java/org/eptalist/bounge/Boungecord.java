@@ -1,12 +1,19 @@
 package org.eptalist.bounge;
 
+import com.google.gson.JsonObject;
 import io.github.p2vman.Identifier;
+import io.github.p2vman.Static;
 import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
+import io.github.p2vman.updater.Updater;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.eptalist.Config;
+import org.eptalist.Constants;
+import org.eptalist.bounge.metrics.Metrics;
+import org.eptalist.metrics.SimplePie;
 import org.eptalist.storge.Data;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +51,30 @@ public final class Boungecord extends Plugin {
 
     @Override
     public void onEnable() {
+        try {
+            Updater updater = Updater.getInstance();
+            JsonObject obj = updater.getLasted();
+            if (!getDescription().getVersion().equals(obj.get("name").getAsString())) {
+                LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "new version:");
+                LOGGER.log(Level.WARNING, updater.getVersionUrl());
+                LOGGER.log(Level.WARNING, "");
+                LOGGER.log(Level.WARNING, "---------------------------------");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        File data = getDataFolder();
+        if (!data.exists()) {
+            data.mkdirs();
+        }
+        config = new Config.ConfigContainer(new File(data, "wh.json"));
+
+        load();
+        Metrics metrics = new Metrics(this, Constants.bstats_id);
+
+        metrics.addCustomChart(new SimplePie("data_type", () -> mode.storage));
         getProxy().getPluginManager().registerListener(this, new Event());
         this.getProxy().getPluginManager().registerCommand(this, new WhiteListCommand());
     }

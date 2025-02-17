@@ -116,6 +116,21 @@ public class ModuleMannager {
             }
 
             @Override
+            public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                return super.visitAnnotation(updateDescriptor(descriptor), visible);
+            }
+
+            @Override
+            public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+                return super.visitTypeAnnotation(typeRef, typePath, updateDescriptor(descriptor), visible);
+            }
+
+            @Override
+            public RecordComponentVisitor visitRecordComponent(String name, String descriptor, String signature) {
+                return super.visitRecordComponent(name, updateDescriptor(descriptor), signature);
+            }
+
+            @Override
             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
                 MethodVisitor mv = super.visitMethod(access, name, updateDescriptor(descriptor), signature, exceptions);
                 return new MethodVisitor(Opcodes.ASM9, mv) {

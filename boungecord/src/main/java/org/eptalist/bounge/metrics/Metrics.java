@@ -1,130 +1,121 @@
-package org.eptalist.velocity.metrics;
+package org.eptalist.bounge.metrics;
 
-/*
- * This Metrics class was auto-generated and can be copied into your project if you are
- * not using a build tool like Gradle or Maven for dependency management.
- *
- * IMPORTANT: You are not allowed to modify this class, except changing the package.
- *
- * Disallowed modifications include but are not limited to:
- *  - Remove the option for users to opt-out
- *  - Change the frequency for data submission
- *  - Obfuscate the code (every obfuscator should allow you to make an exception for specific files)
- *  - Reformat the code (if you use a linter, add an exception)
- *
- * Violations will result in a ban of your plugin and account from bStats.
- */
-
-import com.google.inject.Inject;
-import com.velocitypowered.api.plugin.PluginContainer;
-import com.velocitypowered.api.plugin.PluginDescription;
-import com.velocitypowered.api.plugin.annotation.DataDirectory;
-import com.velocitypowered.api.proxy.ProxyServer;
-import org.eptalist.metrics.CustomChart;
-import org.eptalist.metrics.JsonObjectBuilder;
-import org.slf4j.Logger;
-
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
+import javax.net.ssl.HttpsURLConnection;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
+import org.eptalist.metrics.CustomChart;
+import org.eptalist.metrics.JsonObjectBuilder;
 
 public class Metrics {
 
-    /** A factory to create new Metrics classes. */
-    public static class Factory {
+    private final Plugin plugin;
 
-        private final ProxyServer server;
+    private final MetricsBase metricsBase;
 
-        private final Logger logger;
+    private boolean enabled;
 
-        private final Path dataDirectory;
+    private String serverUUID;
 
-        // The constructor is not meant to be called by the user.
-        // The instance is created using Dependency Injection
-        @Inject
-        private Factory(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
-            this.server = server;
-            this.logger = logger;
-            this.dataDirectory = dataDirectory;
-        }
+    private boolean logErrors = false;
 
-        /**
-         * Creates a new Metrics class.
-         *
-         * @param plugin The plugin instance.
-         * @param serviceId The id of the service. It can be found at <a
-         *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
-         *     <p>Not to be confused with Velocity's {@link PluginDescription#getId()} method!
-         * @return A Metrics instance that can be used to register custom charts.
-         *     <p>The return value can be ignored, when you do not want to register custom charts.
-         */
-        public Metrics make(Object plugin, int serviceId) {
-            return new Metrics(plugin, server, logger, dataDirectory, serviceId);
-        }
-    }
+    private boolean logSentData;
 
-    private final PluginContainer pluginContainer;
+    private boolean logResponseStatusText;
 
-    private final ProxyServer server;
-
-    private MetricsBase metricsBase;
-
-    private Metrics(
-            Object plugin, ProxyServer server, Logger logger, Path dataDirectory, int serviceId) {
-        pluginContainer =
-                server
-                        .getPluginManager()
-                        .fromInstance(plugin)
-                        .orElseThrow(
-                                () -> new IllegalArgumentException("The provided instance is not a plugin"));
-        this.server = server;
-        File configFile = dataDirectory.getParent().resolve("bStats").resolve("config.txt").toFile();
-        MetricsConfig config;
+    /**
+     * Creates a new Metrics instance.
+     *
+     * @param plugin Your plugin instance.
+     * @param serviceId The id of the service. It can be found at <a
+     *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
+     */
+    public Metrics(Plugin plugin, int serviceId) {
+        this.plugin = plugin;
         try {
-            config = new MetricsConfig(configFile, true);
+            loadConfig();
         } catch (IOException e) {
-            logger.error("Failed to create bStats config", e);
+            // Failed to load configuration
+            plugin.getLogger().log(Level.WARNING, "Failed to load bStats config!", e);
+            metricsBase = null;
             return;
         }
         metricsBase =
                 new MetricsBase(
-                        "velocity",
-                        config.getServerUUID(),
+                        "bungeecord",
+                        serverUUID,
                         serviceId,
-                        config.isEnabled(),
+                        enabled,
                         this::appendPlatformData,
                         this::appendServiceData,
-                        task -> server.getScheduler().buildTask(plugin, task).schedule(),
+                        null,
                         () -> true,
-                        logger::warn,
-                        logger::info,
-                        config.isLogErrorsEnabled(),
-                        config.isLogSentDataEnabled(),
-                        config.isLogResponseStatusTextEnabled(),
+                        (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
+                        (message) -> this.plugin.getLogger().log(Level.INFO, message),
+                        logErrors,
+                        logSentData,
+                        logResponseStatusText,
                         false);
-        if (!config.didExistBefore()) {
-            // Send an info message when the bStats config file gets created for the first time
-            logger.info(
-                    "Velocity and some of its plugins collect metrics and send them to bStats (https://bStats.org).");
-            logger.info(
-                    "bStats collects some basic information for plugin authors, like how many people use");
-            logger.info(
-                    "their plugin and their total player count. It's recommend to keep bStats enabled, but");
-            logger.info(
-                    "if you're not comfortable with this, you can opt-out by editing the config.txt file in");
-            logger.info("the '/plugins/bStats/' folder and setting enabled to false.");
+    }
+
+    /** Loads the bStats configuration. */
+    private void loadConfig() throws IOException {
+        File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
+        bStatsFolder.mkdirs();
+        File configFile = new File(bStatsFolder, "config.yml");
+        if (!configFile.exists()) {
+            writeFile(
+                    configFile,
+                    "# bStats (https://bStats.org) collects some basic information for plugin authors, like how",
+                    "# many people use their plugin and their total player count. It's recommended to keep bStats",
+                    "# enabled, but if you're not comfortable with this, you can turn this setting off. There is no",
+                    "# performance penalty associated with having metrics enabled, and data sent to bStats is fully",
+                    "# anonymous.",
+                    "enabled: true",
+                    "serverUuid: \"" + UUID.randomUUID() + "\"",
+                    "logFailedRequests: false",
+                    "logSentData: false",
+                    "logResponseStatusText: false");
+        }
+        Configuration configuration =
+                ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
+        // Load configuration
+        enabled = configuration.getBoolean("enabled", true);
+        serverUUID = configuration.getString("serverUuid");
+        logErrors = configuration.getBoolean("logFailedRequests", false);
+        logSentData = configuration.getBoolean("logSentData", false);
+        logResponseStatusText = configuration.getBoolean("logResponseStatusText", false);
+    }
+
+    private void writeFile(File file, String... lines) throws IOException {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
+            for (String line : lines) {
+                bufferedWriter.write(line);
+                bufferedWriter.newLine();
+            }
         }
     }
 
@@ -139,18 +130,15 @@ public class Metrics {
      * @param chart The chart to add.
      */
     public void addCustomChart(CustomChart chart) {
-        if (metricsBase != null) {
-            metricsBase.addCustomChart(chart);
-        }
+        metricsBase.addCustomChart(chart);
     }
 
     private void appendPlatformData(JsonObjectBuilder builder) {
-        builder.appendField("playerAmount", server.getPlayerCount());
-        builder.appendField("managedServers", server.getAllServers().size());
-        builder.appendField("onlineMode", server.getConfiguration().isOnlineMode() ? 1 : 0);
-        builder.appendField("velocityVersionVersion", server.getVersion().getVersion());
-        builder.appendField("velocityVersionName", server.getVersion().getName());
-        builder.appendField("velocityVersionVendor", server.getVersion().getVendor());
+        builder.appendField("playerAmount", plugin.getProxy().getOnlineCount());
+        builder.appendField("managedServers", plugin.getProxy().getServers().size());
+        builder.appendField("onlineMode", plugin.getProxy().getConfig().isOnlineMode() ? 1 : 0);
+        builder.appendField("bungeecordVersion", plugin.getProxy().getVersion());
+        builder.appendField("bungeecordName", plugin.getProxy().getName());
         builder.appendField("javaVersion", System.getProperty("java.version"));
         builder.appendField("osName", System.getProperty("os.name"));
         builder.appendField("osArch", System.getProperty("os.arch"));
@@ -159,8 +147,7 @@ public class Metrics {
     }
 
     private void appendServiceData(JsonObjectBuilder builder) {
-        builder.appendField(
-                "pluginVersion", pluginContainer.getDescription().getVersion().orElse("unknown"));
+        builder.appendField("pluginVersion", plugin.getDescription().getVersion());
     }
 
     public static class MetricsBase {
@@ -408,164 +395,6 @@ public class Metrics {
                 gzip.write(str.getBytes(StandardCharsets.UTF_8));
             }
             return outputStream.toByteArray();
-        }
-    }
-
-    /**
-     * A simple config for bStats.
-     *
-     * <p>This class is not used by every platform.
-     */
-    public static class MetricsConfig {
-
-        private final File file;
-
-        private final boolean defaultEnabled;
-
-        private String serverUUID;
-
-        private boolean enabled;
-
-        private boolean logErrors;
-
-        private boolean logSentData;
-
-        private boolean logResponseStatusText;
-
-        private boolean didExistBefore = true;
-
-        public MetricsConfig(File file, boolean defaultEnabled) throws IOException {
-            this.file = file;
-            this.defaultEnabled = defaultEnabled;
-            setupConfig();
-        }
-
-        public String getServerUUID() {
-            return serverUUID;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public boolean isLogErrorsEnabled() {
-            return logErrors;
-        }
-
-        public boolean isLogSentDataEnabled() {
-            return logSentData;
-        }
-
-        public boolean isLogResponseStatusTextEnabled() {
-            return logResponseStatusText;
-        }
-
-        /**
-         * Checks whether the config file did exist before or not.
-         *
-         * @return If the config did exist before.
-         */
-        public boolean didExistBefore() {
-            return didExistBefore;
-        }
-
-        /** Creates the config file if it does not exist and read its content. */
-        private void setupConfig() throws IOException {
-            if (!file.exists()) {
-                // Looks like it's the first time we create it (or someone deleted it).
-                didExistBefore = false;
-                writeConfig();
-            }
-            readConfig();
-            if (serverUUID == null) {
-                // Found a malformed config file with no UUID. Let's recreate it.
-                writeConfig();
-                readConfig();
-            }
-        }
-
-        /** Creates a config file with teh default content. */
-        private void writeConfig() throws IOException {
-            List<String> configContent = new ArrayList<>();
-            configContent.add(
-                    "# bStats (https://bStats.org) collects some basic information for plugin authors, like");
-            configContent.add(
-                    "# how many people use their plugin and their total player count. It's recommended to keep");
-            configContent.add(
-                    "# bStats enabled, but if you're not comfortable with this, you can turn this setting off.");
-            configContent.add(
-                    "# There is no performance penalty associated with having metrics enabled, and data sent to");
-            configContent.add("# bStats is fully anonymous.");
-            configContent.add("enabled=" + defaultEnabled);
-            configContent.add("server-uuid=" + UUID.randomUUID().toString());
-            configContent.add("log-errors=false");
-            configContent.add("log-sent-data=false");
-            configContent.add("log-response-status-text=false");
-            writeFile(file, configContent);
-        }
-
-        /** Reads the content of the config file. */
-        private void readConfig() throws IOException {
-            List<String> lines = readFile(file);
-            if (lines == null) {
-                throw new AssertionError("Content of newly created file is null");
-            }
-            enabled = getConfigValue("enabled", lines).map("true"::equals).orElse(true);
-            serverUUID = getConfigValue("server-uuid", lines).orElse(null);
-            logErrors = getConfigValue("log-errors", lines).map("true"::equals).orElse(false);
-            logSentData = getConfigValue("log-sent-data", lines).map("true"::equals).orElse(false);
-            logResponseStatusText =
-                    getConfigValue("log-response-status-text", lines).map("true"::equals).orElse(false);
-        }
-
-        /**
-         * Gets a config setting from the given list of lines of the file.
-         *
-         * @param key The key for the setting.
-         * @param lines The lines of the file.
-         * @return The value of the setting.
-         */
-        private Optional<String> getConfigValue(String key, List<String> lines) {
-            return lines.stream()
-                    .filter(line -> line.startsWith(key + "="))
-                    .map(line -> line.replaceFirst(Pattern.quote(key + "="), ""))
-                    .findFirst();
-        }
-
-        /**
-         * Reads the text content of the given file.
-         *
-         * @param file The file to read.
-         * @return The lines of the given file.
-         */
-        private List<String> readFile(File file) throws IOException {
-            if (!file.exists()) {
-                return null;
-            }
-            try (FileReader fileReader = new FileReader(file);
-                 BufferedReader bufferedReader = new BufferedReader(fileReader)) {
-                return bufferedReader.lines().collect(Collectors.toList());
-            }
-        }
-
-        /**
-         * Writes the given lines to the given file.
-         *
-         * @param file The file to write to.
-         * @param lines The lines to write.
-         */
-        private void writeFile(File file, List<String> lines) throws IOException {
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            }
-            try (FileWriter fileWriter = new FileWriter(file);
-                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-                for (String line : lines) {
-                    bufferedWriter.write(line);
-                    bufferedWriter.newLine();
-                }
-            }
         }
     }
 }

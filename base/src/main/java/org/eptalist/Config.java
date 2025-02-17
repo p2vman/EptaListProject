@@ -21,7 +21,7 @@ public class Config {
                             "whitelist",
                             "base"),
                     "org.eptalist.storge.Json",
-                    Utils.put(new HashMap<>(), "file", "eoptalist.json"),
+                    Utils.put(new HashMap<>(), "file", "eptalist.json"),
                     "&6Молодой человек а вас нету в списке &4:)"
             ),
             new Mode(
@@ -29,7 +29,7 @@ public class Config {
                             "whitelist",
                             "dev"),
                     "org.eptalist.storge.Json",
-                    Utils.put(new HashMap<>(), "file", "eoptalist.dev.json"),
+                    Utils.put(new HashMap<>(), "file", "eptalist.dev.json"),
                     "&2Сервер на тех работах"
             )
     };

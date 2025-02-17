@@ -1,3 +1,5 @@
 name: EptaList
-version: "1.2"
+version: "1.4"
 main: org.eptalist.spigot.EptaList
+softdepend:
+  - ModuleLoader

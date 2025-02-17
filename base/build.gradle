@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.p2vman'
-version = '1.3'
+version = '1.4'
 
 repositories {
     mavenCentral()
@@ -15,11 +15,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
 }
 
-task createJar(type: Jar) {
-    archiveBaseName = 'base'
-    archiveVersion = 'marge'
-    from sourceSets.main.output
-}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
