@@ -68,20 +68,6 @@ public class Velocity {
 
     @Inject
     public Velocity(ProxyServer server, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
-        try {
-            Updater updater = Updater.getInstance();
-            JsonObject obj = updater.getLasted();
-            if (!BuildConstants.VERSION.equals(obj.get("name").getAsString())) {
-                LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
-                LOGGER.log(Level.WARNING, "");
-                LOGGER.log(Level.WARNING, "new version:");
-                LOGGER.log(Level.WARNING, updater.getVersionUrl());
-                LOGGER.log(Level.WARNING, "");
-                LOGGER.log(Level.WARNING, "---------------------------------");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         profiler.push("init");
         this.metricsFactory = metricsFactory;
         this.dataDirectory = dataDirectory;
@@ -90,8 +76,24 @@ public class Velocity {
         }
         config = new Config.ConfigContainer(new File(dataDirectory.toFile(), "config.json"));
         load();
+        if (config.get().auto_update_check) {
+            try {
+                Updater updater = Updater.getInstance();
+                JsonObject obj = updater.getLasted();
+                if (!BuildConstants.VERSION.equals(obj.get("name").getAsString())) {
+                    LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
+                    LOGGER.log(Level.WARNING, "");
+                    LOGGER.log(Level.WARNING, "new version:");
+                    LOGGER.log(Level.WARNING, updater.getVersionUrl());
+                    LOGGER.log(Level.WARNING, "");
+                    LOGGER.log(Level.WARNING, "---------------------------------");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         CommandManager commandManager = server.getCommandManager();
-        commandManager.register("eptalist", new WhiteListCommand(logger));
+        commandManager.register(config.get().command.getPath(), new WhiteListCommand(logger));
         LOGGER.log(Level.INFO, String.format("Load Plugin Configuration %sms", profiler.getElapsedTimeAndRemove(profiler.pop())));
     }
 

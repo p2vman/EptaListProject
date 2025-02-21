@@ -2,7 +2,6 @@ package io.github.p2vman.updater;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,10 +26,16 @@ public class Updater {
     private static final String API_URL = "https://api.spiget.org/v2/resources/";
     private static final String URL = "https://www.spigotmc.org/";
     private static final String SPIGOT_SIDE_API = "https://api.spigotmc.org/legacy/";
+    private JsonObject object;
+
+    public JsonObject getJson() {
+        return object.deepCopy();
+    }
 
     public Updater() {
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(Updater.class.getClassLoader().getResourceAsStream("updater.json")))) {
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+            this.object = jsonObject;
             id = jsonObject.get("id").getAsString();
         } catch (Exception e) {
             e.printStackTrace();

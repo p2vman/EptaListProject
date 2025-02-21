@@ -1,6 +1,10 @@
 package org.eptalist.spigot;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.github.p2vman.lang.Lang;
+import io.github.p2vman.updater.Updater;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,7 +31,8 @@ public class WhiteListCommand extends Command {
             "help",
             "mode",
             "kick_nolisted",
-            "reload"
+            "reload",
+            "info"
     };
     private final Permission permission_enable;
     private final Permission permission_add;
@@ -38,8 +43,8 @@ public class WhiteListCommand extends Command {
     private final Permission permission_list;
 
 
-    public WhiteListCommand() {
-        super("eptalist");
+    public WhiteListCommand(Identifier identifier) {
+        super(identifier.getPath());
         Function<Permission, Permission> recal = (p) -> {
             p.recalculatePermissibles();
             return p;
@@ -64,13 +69,13 @@ public class WhiteListCommand extends Command {
             case "off": if (testPermission(sender, permission_enable)) {
                 EptaList.config.get().enable = false;
                 EptaList.config.save();
-                sender.sendMessage("Whitelist disabled.");
+                sender.sendMessage(Lang.LANG.format("command.off"));
             }
                 break;
             case "on": if (testPermission(sender, permission_enable)) {
                 EptaList.config.get().enable = true;
                 EptaList.config.save();
-                sender.sendMessage("Whitelist enabled.");
+                sender.sendMessage(Lang.LANG.format("command.on"));
             }
                 break;
             case "add": if (testPermission(sender, permission_add)) {
@@ -78,7 +83,7 @@ public class WhiteListCommand extends Command {
                 if (!Utils.len(args, 1)) {
                     sender.sendMessage("Usage: /" + commandLabel + " add <username>");
                 } else if (EptaList.list.addUser(args[1], info)) {
-                    sender.sendMessage("User added to the whitelist: " + args[1]);
+                    sender.sendMessage(Lang.LANG.format("command.add.succes", args[1]));
                 } else {
                     for (String line : info) {
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', line));
@@ -91,7 +96,7 @@ public class WhiteListCommand extends Command {
                 if (!Utils.len(args, 1)) {
                     sender.sendMessage("Usage: /" + commandLabel + " remove <username>");
                 } else if (EptaList.list.removeUser(args[1], info)) {
-                    sender.sendMessage("User removed from the whitelist: " + args[1]);
+                    sender.sendMessage(Lang.LANG.format("command.remove.succes", args[1]));
                 } else {
                     for (String line : info) {
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', line));
@@ -112,9 +117,9 @@ public class WhiteListCommand extends Command {
                         EptaList.config.get().curent = id;
                         EptaList.config.save();
                         EptaList.load();
-                        sender.sendMessage("Mode set to: " + id);
+                        sender.sendMessage(Lang.LANG.format("command.mode.succes", id));
                     } else {
-                        sender.sendMessage("Invalid mode ID!");
+                        sender.sendMessage(Lang.LANG.format("command.mode.invalid.id"));
                     }
                 }
             }
@@ -144,13 +149,23 @@ public class WhiteListCommand extends Command {
             case "reload": if (testPermission(sender, permission_reload)) {
                 try {
                     EptaList.load();
-                    sender.sendMessage("Configuration reloaded successfully.");
+                    sender.sendMessage(Lang.LANG.format("command.reload.succes"));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    sender.sendMessage("Failed to reload the configuration.");
+                    sender.sendMessage(Lang.LANG.format("command.reload.failed"));
                 }
             }
                 break;
+            case "info":
+            {
+                JsonObject object = Updater.getInstance().getJson().getAsJsonObject("info");
+                sender.sendMessage("links:");
+                for (Map.Entry<String, JsonElement> entry : object.getAsJsonObject("urls").entrySet()) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&2"+entry.getKey()+"&f: &4"+entry.getValue().getAsString()));
+                }
+                sender.sendMessage("");
+                break;
+            }
         }
         return true;
     }
@@ -232,7 +247,7 @@ public class WhiteListCommand extends Command {
         if (target.hasPermission(permission.getName())) {
             return true;
         } else {
-            target.sendMessage(ChatColor.RED + "You don't have permission to perform this command.");
+            target.sendMessage(Lang.LANG.format("perm.throw"));
             return false;
         }
     }

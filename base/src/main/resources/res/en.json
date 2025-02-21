@@ -1,0 +1,35 @@
+{
+  "storge": {
+    "remove": {
+      "not.in": "&4 %s is not in the whitelist"
+    },
+    "add": {
+      "is.already": "&4 %s is already on the whitelist"
+    },
+    "reconnect": "&6The database has been reconnected"
+  },
+  "err": {
+    "db": "&4There was an error in the database"
+  },
+  "command": {
+    "reload": {
+      "succes": "Configuration reloaded successfully.",
+      "failed": "&4Failed to reload the configuration."
+    },
+    "remove": {
+      "succes": "User removed from the whitelist: %s"
+    },
+    "add": {
+      "succes": "User added to the whitelist: %s"
+    },
+    "mode": {
+      "succes": "Mode set to: %s",
+      "invalid.id": "&4Invalid mode ID!"
+    },
+    "on": "Whitelist enabled.",
+    "off": "Whitelist disabled."
+  },
+  "perm": {
+    "throw": "&4You don't have permission to perform this command."
+  }
+}

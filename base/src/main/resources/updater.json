@@ -1,4 +1,12 @@
 {
   "id": "122225",
-  "source": "https://github.com/p2vman/EptaListProject"
+  "info": {
+    "authors": [
+      "p2vman"
+    ],
+    "urls": {
+      "source": "https://github.com/p2vman/EptaListProject",
+      "discord": "https://discord.gg/UdSXf4tpUF"
+    }
+  }
 }

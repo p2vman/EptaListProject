@@ -1,6 +1,52 @@
 package io.github.p2vman;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+
 public class Identifier implements Comparable<Identifier> {
+    public static class Adapter extends TypeAdapter<Identifier> {
+        @Override
+        public void write(JsonWriter out, Identifier value) throws IOException {
+            out.value(value.toString());
+        }
+
+        @Override
+        public Identifier read(JsonReader in) throws IOException {
+            JsonToken token = in.peek();
+
+            if (token == JsonToken.STRING) {
+                return new Identifier(in.nextString());
+            } else if (token == JsonToken.BEGIN_OBJECT) {
+                in.beginObject();
+                String namespace = "minecraft";
+                String path = null;
+
+                while (in.hasNext()) {
+                    String name = in.nextName();
+                    if (name.equals("namespace")) {
+                        namespace = in.nextString();
+                    } else if (name.equals("path")) {
+                        path = in.nextString();
+                    } else {
+                        in.skipValue();
+                    }
+                }
+
+                in.endObject();
+                if (path == null) {
+                    throw new IOException("Missing 'path' in Identifier object");
+                }
+
+                return Identifier.of(namespace, path);
+            }
+
+            throw new IOException("Unexpected token: " + token);
+        }
+    }
     public static final char NAMESPACE_SEPARATOR = ':';
     public static final String DEFAULT_NAMESPACE = "minecraft";
     private final String namespace;

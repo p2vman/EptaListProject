@@ -1,6 +1,9 @@
 package org.eptalist.bounge;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.github.p2vman.Identifier;
+import io.github.p2vman.updater.Updater;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
@@ -9,14 +12,14 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class WhiteListCommand extends Command implements TabExecutor {
-    private final String[] w1 = {"off", "on", "add", "remove", "list", "help", "mode", "reload"};
+    private final String[] w1 = {"off", "on", "add", "remove", "list", "help", "mode", "reload","info"};
 
     public WhiteListCommand() {
-        super("eptalist");
+        super(Boungecord.config.get().command.getPath());
     }
 
     @Override
@@ -109,6 +112,16 @@ public class WhiteListCommand extends Command implements TabExecutor {
                     sender.sendMessage(new TextComponent("Failed to reload the configuration."));
                 }
                 break;
+            case "info":
+            {
+                JsonObject object = Updater.getInstance().getJson().getAsJsonObject("info");
+                sender.sendMessage(new TextComponent("links:"));
+                for (Map.Entry<String, JsonElement> entry : object.getAsJsonObject("urls").entrySet()) {
+                    sender.sendMessage(new TextComponent(entry.getKey()+": "+entry.getValue().getAsString()));
+                }
+                sender.sendMessage(new TextComponent());
+                break;
+            }
 
             default:
                 sender.sendMessage(new TextComponent("Unknown command. Use /eptalist help for the list of commands."));

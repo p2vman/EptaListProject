@@ -1,9 +1,11 @@
 package org.eptalist.spigot;
 
 import com.google.gson.JsonObject;
+import io.github.p2vman.lang.Lang;
 import io.github.p2vman.profiling.ExempleProfiler;
 import io.github.p2vman.profiling.Profiler;
 import io.github.p2vman.updater.Updater;
+import org.bukkit.ChatColor;
 import org.eptalist.Config;
 import io.github.p2vman.Identifier;
 import org.eptalist.Constants;
@@ -37,6 +39,13 @@ public final class EptaList extends JavaPlugin {
         profiler.push("load");
         config.load();
         identifiers.clear();
+        Lang.LANG.clear();
+        Lang.LANG.setFormater(((string, args) -> ChatColor.translateAlternateColorCodes('&', String.format(string, args))));
+        try {
+            Lang.LANG.accept(EptaList.class.getResourceAsStream("/res/"+config.get().language+".json"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         for (Config.Mode mode1 : config.get().modes) {
             identifiers.add(mode1.id);
         }
@@ -57,22 +66,6 @@ public final class EptaList extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        try {
-            Updater updater = Updater.getInstance();
-            JsonObject obj = updater.getLasted();
-            if (!getDescription().getVersion().equals(obj.get("name").getAsString())) {
-                LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
-                LOGGER.log(Level.WARNING, "");
-                LOGGER.log(Level.WARNING, "new version:");
-                LOGGER.log(Level.WARNING, updater.getVersionUrl());
-                LOGGER.log(Level.WARNING, "");
-                LOGGER.log(Level.WARNING, "---------------------------------");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
         profiler.push("init");
         metrics = new Metrics(this, Constants.bstats_id);
 
@@ -83,14 +76,31 @@ public final class EptaList extends JavaPlugin {
         config = new Config.ConfigContainer(new File(data, "wh.json"));
         load();
 
+        if (config.get().auto_update_check) {
+            try {
+                Updater updater = Updater.getInstance();
+                JsonObject obj = updater.getLasted();
+                if (!getDescription().getVersion().equals(obj.get("name").getAsString())) {
+                    LOGGER.log(Level.WARNING, "---------- Outdated Version ----------");
+                    LOGGER.log(Level.WARNING, "");
+                    LOGGER.log(Level.WARNING, "new version:");
+                    LOGGER.log(Level.WARNING, updater.getVersionUrl());
+                    LOGGER.log(Level.WARNING, "");
+                    LOGGER.log(Level.WARNING, "---------------------------------");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         try {
             Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
             commandMapField.setAccessible(true);
             CommandMap map = (CommandMap)commandMapField.get(Bukkit.getServer());
 
-            Command command = new WhiteListCommand();
+            Command command = new WhiteListCommand(config.get().command);
 
-            map.register("minecraft", command);
+            map.register(config.get().command.getNamespace(), command);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -98,6 +108,7 @@ public final class EptaList extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new Event(), this);
         metrics.addCustomChart(new SimplePie("data_type", () -> mode.storage));
         LOGGER.log(Level.INFO, String.format("Init Plugin %sms", profiler.getElapsedTimeAndRemove(profiler.pop())));
+        System.out.println(Lang.LANG);
     }
 
     @Override

@@ -7,6 +7,7 @@ plugins {
 import de.undercouch.gradle.tasks.download.Download
 
 subprojects {
+    plugins.apply("java")
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
     }

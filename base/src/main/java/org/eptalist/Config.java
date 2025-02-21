@@ -6,15 +6,19 @@ import io.github.p2vman.Static;
 import io.github.p2vman.Utils;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Config {
+    public Identifier command = new Identifier("command", "eptalist");
+    @SerializedName("updater")
+    public boolean auto_update_check = true;
     public boolean enable = false;
     public boolean skip_to_op = true;
     public Identifier curent = new Identifier("whitelist", "base");
+    @SerializedName("lang")
+    public String language = "en";
     public Mode[] modes = new Mode[] {
             new Mode(
                     new Identifier(
@@ -67,12 +71,12 @@ public class Config {
             try {
                 if (!config.exists()) {
                     this.cfg = new Config();
-                    try (FileWriter writer =new FileWriter(this.config)) {
+                    try (FileWriter writer =new FileWriter(this.config, StandardCharsets.UTF_8)) {
                         Static.GSON.toJson(cfg, writer);
                     }
                 }
                 else {
-                    try (FileReader reader = new FileReader(this.config)) {
+                    try (FileReader reader = new FileReader(this.config, StandardCharsets.UTF_8)) {
                         cfg = Static.GSON.fromJson(reader, Config.class);
                     }
                 }
@@ -82,7 +86,7 @@ public class Config {
         }
 
         public void save() {
-            try (FileWriter writer = new FileWriter(this.config)) {
+            try (FileWriter writer = new FileWriter(this.config, StandardCharsets.UTF_8)) {
                 Static.GSON.toJson(cfg, writer);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -3,6 +3,7 @@ package org.eptalist.storge;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import io.github.p2vman.Static;
+import io.github.p2vman.lang.Lang;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -110,7 +111,7 @@ public class Json extends ArrayList<String> implements Data<String> {
     @Override
     public boolean removeUser(String name, List<String> info) {
         if (!is(name)) {
-            info.add("&r" + name + "is not in the whitelist");
+            info.add(Lang.LANG.format("storge.remove.not.in", name));
             return false;
         }
         return remove(name);
@@ -119,7 +120,7 @@ public class Json extends ArrayList<String> implements Data<String> {
     @Override
     public boolean addUser(String name, List<String> info) {
         if (is(name)) {
-            info.add("&r" + name + "is already on the whitelist");
+            info.add(Lang.LANG.format("storge.add.is.already", name));
             return false;
         }
         return add(name);
