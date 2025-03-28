@@ -1,5 +1,5 @@
 name: EptaList
 version: "${version}"
-main: org.eptalist.spigot.EptaList
+main: io.github.p2vman.eptalist.spigot.EptaList
 authors:
   - p2vman

@@ -1,5 +1,5 @@
 name: EptaList
 version: '${version}'
-main: org.eptalist.bounge.Boungecord
+main: io.github.p2vman.eptalist.bounge.Boungecord
 authors:
   - p2vman

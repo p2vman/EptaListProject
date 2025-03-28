@@ -26,6 +26,7 @@
       "succes": "Mode set to: %s",
       "invalid.id": "&4Invalid mode ID!"
     },
+    "default": "Unknown command. Use /eptalist help for the list of commands.",
     "on": "Whitelist enabled.",
     "off": "Whitelist disabled."
   },

@@ -2,6 +2,7 @@
 plugins {
     id 'java'
     id 'de.undercouch.download' version '5.4.0' apply false
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 import de.undercouch.gradle.tasks.download.Download
@@ -31,6 +32,7 @@ ext {
 }
 
 task mergePlugins(type: Jar) {
+    dependsOn shadowJar
     def io = it
     archiveBaseName = 'EptaList'
     archiveVersion = version
@@ -44,8 +46,10 @@ task mergePlugins(type: Jar) {
             dependsOn task
             jr.add(task.get().archiveFile.get())
         }
+        jr.add(file("./build/libs/libs-LOL.jar"))
         return jr
     }
+
     from jars().collect { zipTree(it) }
 
     from(file("LICENSE")) {
@@ -64,9 +68,22 @@ task mergePlugins(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-
-task mergeALL() {
+tasks.build {
     dependsOn mergePlugins
+}
+
+dependencies {
+    implementation("com.moandjiezana.toml:toml4j:0.7.2")
+}
+
+shadowJar {
+    archiveBaseName.set('libs')
+    archiveClassifier.set('')
+    archiveVersion.set("LOL")
+
+    exclude 'com/google/gson/**'
+
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
 tasks.register('downloadBungeeCord', Download) {

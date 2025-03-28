@@ -5,7 +5,7 @@ plugins {
 }
 
 evaluationDependsOn(':base')
-group = 'org.eptalist'
+group = 'io.github.p2vman.eptalist.velocity'
 version = project.findProperty("version")
 
 repositories {

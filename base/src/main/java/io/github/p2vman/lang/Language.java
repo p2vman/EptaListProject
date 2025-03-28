@@ -86,7 +86,7 @@ public class Language implements Lang, BiConsumer<String, String>, Consumer<Inpu
         return formatter.format(getOrDefult(id), args);
     }
 
-    public Formatter setFormatter(Formatter formatter) {
+    public Formatter setFormater(Formatter formatter) {
         this.formatter = formatter;
         return formatter;
     }

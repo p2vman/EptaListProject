@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Stack;
 
 public class ExempleProfiler implements Profiler {
+    private static final String $file = "https://github.com/p2vman/EptaListProject/blob/master/base/src/main/java/io/github/p2vman/profiling/ExempleProfiler.java";
     private final Map<String, Long> totalTimes = new HashMap<>();
     private final Stack<String> stack = new Stack<>();
     private final Map<String, Long> startTimes = new HashMap<>();
@@ -16,12 +17,13 @@ public class ExempleProfiler implements Profiler {
 
     public String pop() {
         if (stack.isEmpty()) {
-            throw new IllegalStateException("Нет активных блоков для остановки.");
+            throw new IllegalStateException($file+"#L20");
         }
         String name = stack.pop();
         Long startTime = startTimes.remove(name);
         if (startTime == null) {
-            throw new IllegalStateException("Блок " + name + " не был запущен.");
+            System.out.println($file+"#L26");
+            throw new IllegalStateException(name);
         }
         long elapsedTime = System.nanoTime() - startTime;
         totalTimes.put(name, totalTimes.getOrDefault(name, 0L) + elapsedTime);
@@ -30,7 +32,7 @@ public class ExempleProfiler implements Profiler {
 
     public String peek() {
         if (stack.isEmpty()) {
-            throw new IllegalStateException("Нет активных блоков.");
+            throw new IllegalStateException($file+"#L35");
         }
         return stack.peek();
     }
@@ -38,7 +40,8 @@ public class ExempleProfiler implements Profiler {
     public long getElapsedTimeAndRemove(String name) {
         Long elapsedTime = totalTimes.remove(name);
         if (elapsedTime == null) {
-            throw new IllegalStateException("Блок " + name + " не найден.");
+            System.out.println($file+"#L44");
+            throw new IllegalStateException(name);
         }
         return elapsedTime / 1_000_000;
     }
@@ -46,7 +49,8 @@ public class ExempleProfiler implements Profiler {
     public long getElapsedTime(String name) {
         Long elapsedTime = totalTimes.get(name);
         if (elapsedTime == null) {
-            throw new IllegalStateException("Блок " + name + " не найден.");
+            System.out.println($file+"#L53");
+            throw new IllegalStateException(name);
         }
         return elapsedTime / 1_000_000;
     }
