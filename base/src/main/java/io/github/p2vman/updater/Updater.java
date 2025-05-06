@@ -2,12 +2,12 @@ package io.github.p2vman.updater;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Objects;
 
@@ -17,15 +17,11 @@ public class Updater {
         if (updater == null) updater = new Updater();
         return updater;
     }
+    @Getter
     private String id;
-
-    public String getId() {
-        return id;
-    }
 
     private static final String API_URL = "https://api.spiget.org/v2/resources/";
     private static final String URL = "https://www.spigotmc.org/";
-    private static final String SPIGOT_SIDE_API = "https://api.spigotmc.org/legacy/";
     private JsonObject object;
 
     public JsonObject getJson() {
@@ -42,7 +38,7 @@ public class Updater {
         }
     }
 
-    public JsonObject getLasted() throws ProtocolException, IOException {
+    public JsonObject getLasted() throws IOException {
         URL url = new URL(API_URL + id + "/versions/latest");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -51,7 +47,7 @@ public class Updater {
         return JsonParser.parseReader(new BufferedReader(new InputStreamReader(conn.getInputStream()))).getAsJsonObject();
     }
 
-    public String getVersionUrl() throws ProtocolException, IOException  {
+    public String getVersionUrl() throws IOException  {
         URL url = new URL(API_URL + id);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");

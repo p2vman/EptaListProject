@@ -60,7 +60,7 @@ public class Velocity {
             }
         }
         try {
-            list = (Data) Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
+            list = Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,12 +75,7 @@ public class Velocity {
         if (!Files.exists(dataDirectory)) {
             dataDirectory.toFile().mkdirs();
         }
-
-        File cf = new File(dataDirectory.toFile(), "config.json");
-        if (!cf.exists()) cf = new File(dataDirectory.toFile(), "config.toml");
-
-
-        config = new Config.ConfigContainer(cf);
+        config = new Config.ConfigContainer(new File(dataDirectory.toFile(), "config.cfg"));
         load();
         if (config.get().auto_update_check) {
             try {
