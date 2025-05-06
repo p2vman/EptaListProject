@@ -1,16 +1,14 @@
 package io.github.p2vman.eptalist;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
-import com.moandjiezana.toml.Toml;
-import com.moandjiezana.toml.TomlWriter;
 import io.github.p2vman.Identifier;
 import io.github.p2vman.Static;
 import io.github.p2vman.Utils;
+import io.github.p2vman.config.MiniConfig;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,26 +70,22 @@ public class Config {
             }
             return cfg;
         }
-
         public void load() {
             try {
                 if (!config.exists()) {
                     this.cfg = new Config();
-                    try (FileWriter writer =new FileWriter(this.config, StandardCharsets.UTF_8)) {
-                        if (json) {
-                            Static.GSON.toJson(cfg, writer);
-                        }
-                        else {
-                            new TomlWriter().write(cfg, writer);
-                        }
-                    }
-                }
-                else {
-                    try (FileReader reader = new FileReader(this.config, StandardCharsets.UTF_8)) {
+                    save();
+                } else {
+                    try (Reader reader = new InputStreamReader(new FileInputStream(config), "UTF-8")) {
                         if (json) {
                             cfg = Static.GSON.fromJson(reader, Config.class);
                         } else {
-                            cfg = new Toml().read(reader).to(Config.class);
+                            StringBuilder sb = new StringBuilder();
+                            BufferedReader br = new BufferedReader(reader);
+                            String line;
+                            while ((line = br.readLine()) != null) sb.append(line).append('\n');
+                            JsonObject raw = MiniConfig.parse(sb.toString());
+                            cfg = Static.GSON.fromJson(raw, Config.class);
                         }
                     }
                 }
@@ -101,12 +95,12 @@ public class Config {
         }
 
         public void save() {
-            try (FileWriter writer = new FileWriter(this.config, StandardCharsets.UTF_8)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(config), "UTF-8")) {
                 if (json) {
                     Static.GSON.toJson(cfg, writer);
-                }
-                else {
-                    new TomlWriter().write(cfg, writer);
+                } else {
+                    JsonElement tree = Static.GSON.toJsonTree(cfg);
+                    writer.write(MiniConfig.toMiniConf(tree.getAsJsonObject(), 0));
                 }
             } catch (Exception e) {
                 e.printStackTrace();

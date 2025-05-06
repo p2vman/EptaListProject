@@ -32,7 +32,7 @@ public final class EptaList extends JavaPlugin {
     public static final Logger LOGGER = Logger.getLogger("EptaList");
 
     public static Config.ConfigContainer config;
-    public static Data list;
+    public static Data<String> list;
     public static Config.Mode mode;
     public static List<Identifier> identifiers = new ArrayList<>();
 

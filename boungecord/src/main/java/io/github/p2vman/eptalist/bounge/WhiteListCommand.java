@@ -49,11 +49,8 @@ public class WhiteListCommand extends Command implements TabExecutor {
                     break;
                 }
                 String usernameToAdd = args[1];
-                List<String> infoAdd = new ArrayList<>();
-                if (Boungecord.list.addUser(usernameToAdd, infoAdd)) {
+                if (Boungecord.list.addUser(usernameToAdd, (t) -> sender.sendMessage(new TextComponent((String) t)))) {
                     sender.sendMessage(new TextComponent(Lang.LANG.format("command.add.succes", usernameToAdd)));
-                } else {
-                    infoAdd.forEach(line -> sender.sendMessage(new TextComponent(line)));
                 }
                 break;
 
@@ -63,11 +60,8 @@ public class WhiteListCommand extends Command implements TabExecutor {
                     break;
                 }
                 String usernameToRemove = args[1];
-                List<String> infoRemove = new ArrayList<>();
-                if (Boungecord.list.removeUser(usernameToRemove, infoRemove)) {
+                if (Boungecord.list.removeUser(usernameToRemove, (t) -> sender.sendMessage(new TextComponent((String) t)))) {
                     sender.sendMessage(new TextComponent(Lang.LANG.format("command.remove.succes", usernameToRemove)));
-                } else {
-                    infoRemove.forEach(line -> sender.sendMessage(new TextComponent(line)));
                 }
                 break;
 

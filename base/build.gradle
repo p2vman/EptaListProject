@@ -17,7 +17,7 @@ dependencies {
     compileOnly "com.google.code.gson:gson:2.8.9"
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     compileOnly 'org.projectlombok:lombok:1.18.30'
-    compileOnly("com.moandjiezana.toml:toml4j:0.7.2")
+    //implementation 'com.ibm.async:asyncutil:0.1.0'
 }
 
 tasks.withType(JavaCompile).configureEach {

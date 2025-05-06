@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class Sqlite implements Data<String> {
 
@@ -45,9 +46,9 @@ public class Sqlite implements Data<String> {
     }
 
     @Override
-    public boolean removeUser(String name, List<String> info) {
+    public boolean removeUser(String name, Consumer<String> info) {
         if (!is(name)) {
-            info.add(Lang.LANG.format("storge.remove.not.in", name));
+            info.accept(Lang.LANG.format("storge.remove.not.in", name));
             return false;
         }
         try {
@@ -56,17 +57,17 @@ public class Sqlite implements Data<String> {
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            info.add(Lang.LANG.format("err.db"));
+            info.accept(Lang.LANG.format("err.db"));
             return false;
         }
     }
 
     @Override
-    public boolean is(String name, List<String> info) {
+    public boolean is(String name, Consumer<String> info) {
         try {
             if (connection.isClosed()) {
                 connection = DriverManager.getConnection(String.format("jdbc:sqlite:%s.db", (String) this.data.get("file")));
-                info.add(Lang.LANG.format("storge.reconnect"));
+                info.accept(Lang.LANG.format("storge.reconnect"));
             }
             PreparedStatement statement = connection.prepareStatement("SELECT "+this.i+" FROM "+this.teable+" WHERE "+this.i+" = ?");
             statement.setString(1, name);
@@ -74,7 +75,7 @@ public class Sqlite implements Data<String> {
             return resultSet.next();
         } catch (SQLException e) {
             e.printStackTrace();
-            info.add(Lang.LANG.format("err.db"));
+            info.accept(Lang.LANG.format("err.db"));
             return false;
         }
     }
@@ -96,9 +97,9 @@ public class Sqlite implements Data<String> {
     }
 
     @Override
-    public boolean addUser(String name, List<String> info) {
+    public boolean addUser(String name, Consumer<String> info) {
         if (is(name)) {
-            info.add(Lang.LANG.format("storge.add.is.already", name));
+            info.accept(Lang.LANG.format("storge.add.is.already", name));
             return false;
         }
         try {
@@ -107,7 +108,7 @@ public class Sqlite implements Data<String> {
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            info.add(Lang.LANG.format("err.db"));
+            info.accept(Lang.LANG.format("err.db"));
             return false;
         }
     }

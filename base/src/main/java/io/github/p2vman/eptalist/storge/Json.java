@@ -8,6 +8,7 @@ import io.github.p2vman.lang.Lang;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Json extends ArrayList<String> implements Data<String> {
     @Override
@@ -104,23 +105,23 @@ public class Json extends ArrayList<String> implements Data<String> {
     }
 
     @Override
-    public boolean is(String name, List<String> info) {
+    public boolean is(String name, Consumer<String> info) {
         return contains(name);
     }
 
     @Override
-    public boolean removeUser(String name, List<String> info) {
+    public boolean removeUser(String name, Consumer<String> info) {
         if (!is(name)) {
-            info.add(Lang.LANG.format("storge.remove.not.in", name));
+            info.accept(Lang.LANG.format("storge.remove.not.in", name));
             return false;
         }
         return remove(name);
     }
 
     @Override
-    public boolean addUser(String name, List<String> info) {
+    public boolean addUser(String name, Consumer<String> info) {
         if (is(name)) {
-            info.add(Lang.LANG.format("storge.add.is.already", name));
+            info.accept(Lang.LANG.format("storge.add.is.already", name));
             return false;
         }
         return add(name);

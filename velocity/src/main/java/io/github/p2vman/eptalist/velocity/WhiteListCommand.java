@@ -60,11 +60,8 @@ public class WhiteListCommand implements SimpleCommand {
                     break;
                 }
                 String usernameToAdd = args[1];
-                List<String> infoAdd = new ArrayList<>();
-                if (Velocity.list.addUser(usernameToAdd, infoAdd)) {
+                if (Velocity.list.addUser(usernameToAdd, (t) -> sender.sendMessage(Component.text(t)))) {
                     sender.sendMessage(Component.text(Lang.LANG.format("command.add.succes", usernameToAdd)));
-                } else {
-                    infoAdd.forEach(line -> sender.sendMessage(Component.text(line)));
                 }
                 break;
 
@@ -74,11 +71,8 @@ public class WhiteListCommand implements SimpleCommand {
                     break;
                 }
                 String usernameToRemove = args[1];
-                List<String> infoRemove = new ArrayList<>();
-                if (Velocity.list.removeUser(usernameToRemove, infoRemove)) {
+                if (Velocity.list.removeUser(usernameToRemove, (t) -> sender.sendMessage(Component.text(t)))) {
                     sender.sendMessage(Component.text(Lang.LANG.format("command.remove.succes", usernameToRemove)));
-                } else {
-                    infoRemove.forEach(line -> sender.sendMessage(Component.text(line)));
                 }
                 break;
 
