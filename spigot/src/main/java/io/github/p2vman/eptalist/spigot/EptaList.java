@@ -75,7 +75,7 @@ public final class EptaList extends JavaPlugin {
             data.mkdirs();
         }
 
-        config = new Config.ConfigContainer(new File(data, "config.cfg"));
+        config = new Config.ConfigContainer(new File(data, "config.json"));
         load();
 
         if (config.get().auto_update_check) {

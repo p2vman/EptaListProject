@@ -39,7 +39,6 @@ public class Velocity {
     @Inject
     private Logger logger;
     public static Config.ConfigContainer config;
-    private Path dataDirectory;
     private final Metrics.Factory metricsFactory;
 
     public static Data<String> list;
@@ -71,7 +70,6 @@ public class Velocity {
     public Velocity(ProxyServer server, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
         profiler.push("init");
         this.metricsFactory = metricsFactory;
-        this.dataDirectory = dataDirectory;
         if (!Files.exists(dataDirectory)) {
             dataDirectory.toFile().mkdirs();
         }
@@ -108,7 +106,7 @@ public class Velocity {
 
     @Subscribe
     public void onLogin(LoginEvent event) {
-        if (list.is(event.getPlayer().getUsername())) {
+        if (!list.is(event.getPlayer().getUsername())) {
             event.setResult(ResultedEvent.ComponentResult.denied(Component.text(mode.kick_msg)));
         }
     }

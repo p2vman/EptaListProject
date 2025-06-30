@@ -19,7 +19,11 @@ public class Event implements Listener {
             if (config.enable) {
                 if (!(config.skip_to_op && p.isOp())) {
                     EptaList.list.isAsync(p.getName(), p::sendMessage).thenAccept((ea) -> {
-                        if (!ea) p.kickPlayer(ChatColor.translateAlternateColorCodes('&', EptaList.mode.kick_msg));
+                        if (!ea) try {
+                            p.kickPlayer(ChatColor.translateAlternateColorCodes('&', EptaList.mode.kick_msg));
+                        } catch (Exception exception) {
+                            p.kickPlayer(Lang.LANG.format("err.internal"));
+                        }
                     }).exceptionally(er -> {
                         p.kickPlayer(Lang.LANG.format("err.internal"));
                         return null;

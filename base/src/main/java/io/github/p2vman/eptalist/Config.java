@@ -1,12 +1,9 @@
 package io.github.p2vman.eptalist;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import io.github.p2vman.Identifier;
 import io.github.p2vman.Static;
 import io.github.p2vman.Utils;
-import io.github.p2vman.config.MiniConfig;
 
 import java.io.*;
 import java.util.HashMap;
@@ -58,10 +55,8 @@ public class Config {
     public static class ConfigContainer {
         private File config;
         private Config cfg = null;
-        private boolean json;
         public ConfigContainer(File config) {
             this.config = config;
-            this.json = config.getName().endsWith(".json");
         }
 
         public Config get() {
@@ -77,16 +72,7 @@ public class Config {
                     save();
                 } else {
                     try (Reader reader = new InputStreamReader(new FileInputStream(config), "UTF-8")) {
-                        if (json) {
-                            cfg = Static.GSON.fromJson(reader, Config.class);
-                        } else {
-                            StringBuilder sb = new StringBuilder();
-                            BufferedReader br = new BufferedReader(reader);
-                            String line;
-                            while ((line = br.readLine()) != null) sb.append(line).append('\n');
-                            JsonObject raw = MiniConfig.parse(sb.toString());
-                            cfg = Static.GSON.fromJson(raw, Config.class);
-                        }
+                        cfg = Static.GSON.fromJson(reader, Config.class);
                     }
                 }
             } catch (Exception e) {
@@ -96,12 +82,7 @@ public class Config {
 
         public void save() {
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(config), "UTF-8")) {
-                if (json) {
-                    Static.GSON.toJson(cfg, writer);
-                } else {
-                    JsonElement tree = Static.GSON.toJsonTree(cfg);
-                    writer.write(MiniConfig.toMiniConf(tree.getAsJsonObject(), 0));
-                }
+                Static.GSON.toJson(cfg, writer);
             } catch (Exception e) {
                 e.printStackTrace();
             }
