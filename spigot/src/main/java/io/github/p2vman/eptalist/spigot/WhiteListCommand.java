@@ -60,6 +60,7 @@ public class WhiteListCommand extends Command {
         permission_outher = recal.apply(new Permission("eptalist.outher", PermissionDefault.OP));
     }
 
+    //@SuppressWarnings("unchecked")
     @Override
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
         if (!(args.length > 0)) {
@@ -83,25 +84,22 @@ public class WhiteListCommand extends Command {
                 List<String> info = new ArrayList<>();
                 if (!Utils.len(args, 1)) {
                     sender.sendMessage("Usage: /" + commandLabel + " add <username>");
-                } else if (EptaList.list.addUser(args[1], info)) {
-                    sender.sendMessage(Lang.LANG.format("command.add.succes", args[1]));
                 } else {
-                    for (String line : info) {
-                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', line));
-                    }
+                    EptaList.list.addUserAsync(args[1], (t) -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&', (String) t)))
+                            .thenAccept((d) -> {
+                                if (d) sender.sendMessage(Lang.LANG.format("command.add.succes", args[1]));
+                            });
                 }
             }
                 break;
             case "remove": if (testPermission(sender, permission_remove)) {
-                List<String> info = new ArrayList<>();
                 if (!Utils.len(args, 1)) {
                     sender.sendMessage("Usage: /" + commandLabel + " remove <username>");
-                } else if (EptaList.list.removeUser(args[1], info)) {
-                    sender.sendMessage(Lang.LANG.format("command.remove.succes", args[1]));
                 } else {
-                    for (String line : info) {
-                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', line));
-                    }
+                    EptaList.list.removeUserAsync(args[1], (t) -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&', (String) t)))
+                            .thenAccept((d) -> {
+                        if (d) sender.sendMessage(Lang.LANG.format("command.remove.succes", args[1]));
+                    });
                 }
             }
                 break;

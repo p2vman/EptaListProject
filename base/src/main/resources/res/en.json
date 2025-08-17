@@ -9,7 +9,8 @@
     "reconnect": "&6The database has been reconnected"
   },
   "err": {
-    "db": "&4There was an error in the database"
+    "db": "&4There was an error in the database",
+    "internal": "&4 internal server error"
   },
   "command": {
     "reload": {

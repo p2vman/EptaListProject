@@ -1,16 +1,11 @@
 package io.github.p2vman.eptalist;
 
 import com.google.gson.annotations.SerializedName;
-import com.moandjiezana.toml.Toml;
-import com.moandjiezana.toml.TomlWriter;
 import io.github.p2vman.Identifier;
 import io.github.p2vman.Static;
 import io.github.p2vman.Utils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,10 +55,8 @@ public class Config {
     public static class ConfigContainer {
         private File config;
         private Config cfg = null;
-        private boolean json;
         public ConfigContainer(File config) {
             this.config = config;
-            this.json = config.getName().endsWith(".json");
         }
 
         public Config get() {
@@ -72,27 +65,14 @@ public class Config {
             }
             return cfg;
         }
-
         public void load() {
             try {
                 if (!config.exists()) {
                     this.cfg = new Config();
-                    try (FileWriter writer =new FileWriter(this.config, StandardCharsets.UTF_8)) {
-                        if (json) {
-                            Static.GSON.toJson(cfg, writer);
-                        }
-                        else {
-                            new TomlWriter().write(cfg, writer);
-                        }
-                    }
-                }
-                else {
-                    try (FileReader reader = new FileReader(this.config, StandardCharsets.UTF_8)) {
-                        if (json) {
-                            cfg = Static.GSON.fromJson(reader, Config.class);
-                        } else {
-                            cfg = new Toml().read(reader).to(Config.class);
-                        }
+                    save();
+                } else {
+                    try (Reader reader = new InputStreamReader(new FileInputStream(config), "UTF-8")) {
+                        cfg = Static.GSON.fromJson(reader, Config.class);
                     }
                 }
             } catch (Exception e) {
@@ -101,13 +81,8 @@ public class Config {
         }
 
         public void save() {
-            try (FileWriter writer = new FileWriter(this.config, StandardCharsets.UTF_8)) {
-                if (json) {
-                    Static.GSON.toJson(cfg, writer);
-                }
-                else {
-                    new TomlWriter().write(cfg, writer);
-                }
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(config), "UTF-8")) {
+                Static.GSON.toJson(cfg, writer);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -23,7 +23,7 @@ public final class Boungecord extends Plugin {
     public static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("EptaList");
     public static final Profiler profiler = new ExempleProfiler();
     public static Config.ConfigContainer config;
-    public static Data list;
+    public static Data<String> list;
     public static Config.Mode mode;
     public static List<Identifier> identifiers = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public final class Boungecord extends Plugin {
             }
         }
         try {
-            list = (Data) Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
+            list = Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,10 +55,7 @@ public final class Boungecord extends Plugin {
         if (!data.exists()) {
             data.mkdirs();
         }
-        File cf = new File(data, "wh.json");
-        if (!cf.exists()) cf = new File(data, "config.toml");
-
-        config = new Config.ConfigContainer(cf);
+        config = new Config.ConfigContainer(new File(data, "config.cfg"));
         load();
         if (config.get().auto_update_check)
         {

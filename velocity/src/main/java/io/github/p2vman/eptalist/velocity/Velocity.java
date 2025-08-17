@@ -39,10 +39,9 @@ public class Velocity {
     @Inject
     private Logger logger;
     public static Config.ConfigContainer config;
-    private Path dataDirectory;
     private final Metrics.Factory metricsFactory;
 
-    public static Data list;
+    public static Data<String> list;
     public static Config.Mode mode;
     public static List<Identifier> identifiers = new ArrayList<>();
     public static void load() {
@@ -60,7 +59,7 @@ public class Velocity {
             }
         }
         try {
-            list = (Data) Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
+            list = Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -71,16 +70,10 @@ public class Velocity {
     public Velocity(ProxyServer server, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
         profiler.push("init");
         this.metricsFactory = metricsFactory;
-        this.dataDirectory = dataDirectory;
         if (!Files.exists(dataDirectory)) {
             dataDirectory.toFile().mkdirs();
         }
-
-        File cf = new File(dataDirectory.toFile(), "config.json");
-        if (!cf.exists()) cf = new File(dataDirectory.toFile(), "config.toml");
-
-
-        config = new Config.ConfigContainer(cf);
+        config = new Config.ConfigContainer(new File(dataDirectory.toFile(), "config.cfg"));
         load();
         if (config.get().auto_update_check) {
             try {
@@ -113,7 +106,7 @@ public class Velocity {
 
     @Subscribe
     public void onLogin(LoginEvent event) {
-        if (list.is(event.getPlayer().getUsername())) {
+        if (!list.is(event.getPlayer().getUsername())) {
             event.setResult(ResultedEvent.ComponentResult.denied(Component.text(mode.kick_msg)));
         }
     }

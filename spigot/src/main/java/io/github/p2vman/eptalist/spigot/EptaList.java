@@ -32,7 +32,7 @@ public final class EptaList extends JavaPlugin {
     public static final Logger LOGGER = Logger.getLogger("EptaList");
 
     public static Config.ConfigContainer config;
-    public static Data list;
+    public static Data<String> list;
     public static Config.Mode mode;
     public static List<Identifier> identifiers = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public final class EptaList extends JavaPlugin {
             }
         }
         try {
-            list = (Data) Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
+            list = Storge.find(mode.storage).getConstructor(Map.class).newInstance(mode.data);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,10 +75,7 @@ public final class EptaList extends JavaPlugin {
             data.mkdirs();
         }
 
-        File cf = new File(data, "wh.json");
-        if (!cf.exists()) cf = new File(data, "config.toml");
-
-        config = new Config.ConfigContainer(cf);
+        config = new Config.ConfigContainer(new File(data, "config.json"));
         load();
 
         if (config.get().auto_update_check) {
