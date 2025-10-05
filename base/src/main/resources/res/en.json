@@ -1,16 +1,16 @@
 {
   "storge": {
     "remove": {
-      "not.in": "&4 %s is not in the whitelist"
+      "not.in": "&4 %s is not in the whitelist."
     },
     "add": {
-      "is.already": "&4 %s is already on the whitelist"
+      "is.already": "&4 %s is already on the whitelist."
     },
-    "reconnect": "&6The database has been reconnected"
+    "reconnect": "&6The database has been reconnected."
   },
   "err": {
-    "db": "&4There was an error in the database",
-    "internal": "&4 internal server error"
+    "db": "&4There was an error in the database.",
+    "internal": "&4 internal server error."
   },
   "command": {
     "reload": {
@@ -18,13 +18,13 @@
       "failed": "&4Failed to reload the configuration."
     },
     "remove": {
-      "succes": "User removed from the whitelist: %s"
+      "succes": "User removed from the whitelist: %s."
     },
     "add": {
-      "succes": "User added to the whitelist: %s"
+      "succes": "User added to the whitelist: %s."
     },
     "mode": {
-      "succes": "Mode set to: %s",
+      "succes": "Mode set to: %s.",
       "invalid.id": "&4Invalid mode ID!"
     },
     "default": "Unknown command. Use /eptalist help for the list of commands.",
