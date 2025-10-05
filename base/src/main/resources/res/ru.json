@@ -9,8 +9,8 @@
     "reconnect": "&6Подключение к базе данных восстановлено."
   },
   "err": {
-    "db": "&4Произошла ошибка в базе данных".,
-    "internal": "&4 internal server erro.r"
+    "db": "&4Произошла ошибка в базе данных.",
+    "internal": "&4 internal server error."
   },
   "command": {
     "reload": {
